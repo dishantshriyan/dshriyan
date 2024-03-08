@@ -1,127 +1,120 @@
-var bow , arrow,  background;
-var bowImage, arrowImage, green_balloonImage, red_balloonImage, pink_balloonImage ,blue_balloonImage, backgroundImage;
-var Score = 0;
-function preload(){
-  
-  backgroundImage = loadImage("background0.png");
-  arrowImage = loadImage("arrow0.png");
-  bowImage = loadImage("bow0.png");
-  red_balloonImage = loadImage("red_balloon0.png");
-  green_balloonImage = loadImage("green_balloon0.png")
-  pink_balloonImage = loadImage("pink_balloon0.png")
-  blue_balloonImage = loadImage("blue_balloon0.png")
-}
+const Engine = Matter.Engine;
+const World = Matter.World;
+const Bodies = Matter.Bodies;
+const Constraint = Matter.Constraint;
 
+var engine, world;
+var canvas;
+var palyer, playerBase;
+var computer, computerBase;
+
+//Declare an array for arrows playerArrows = [ ]
+var playerArrows = [];
+
+var arrow;
 
 
 function setup() {
-  createCanvas(400, 400);
+  canvas = createCanvas(windowWidth, windowHeight);
+
+  engine = Engine.create();
+  world = engine.world;
+
+  playerBase = new PlayerBase(300, random(450, height - 300), 180, 150);
+  player = new Player(285, playerBase.body.position.y - 153, 50, 180);
+  playerArcher = new PlayerArcher(
+    340,
+    playerBase.body.position.y - 180,
+    120,
+    120
+  );
+
+  computerBase = new ComputerBase(
+    width - 300,
+    random(450, height - 300),
+    180,
+    150
+  );
+  computer = new Computer(
+    width - 280,
+    computerBase.body.position.y - 153,
+    50,
+    180
+  );
+  computerArcher = new ComputerArcher(
+    width - 340,
+    computerBase.body.position.y - 180,
+    120,
+    120
+  );
   
-  //creating background
-  scene = createSprite(0,0,400,400);
-  scene.addImage(backgroundImage);
-  scene.scale = 2.5
-  
-  // creating bow to shoot arrow
-  bow = createSprite(380,220,20,50);
-  bow.addImage(bowImage); 
-  bow.scale = 1;
-  
+ 
+
+
 }
 
 function draw() {
- background(0);
-  // moving ground
-    scene.velocityX = -3 
+  background(180);
 
-    if (scene.x < 0){
-      scene.x = scene.width/2;
-    }
+  Engine.update(engine);
+
+  // Title
+  fill("#FFFF");
+  textAlign("center");
+  textSize(40);
+  text("EPIC ARCHERY", width / 2, 100);
+
+ 
+  playerBase.display();
+  player.display();
   
-  //moving bow
-  bow.y = World.mouseY
+
+  computerBase.display();
+  computer.display();
   
-   // release arrow when space key is pressed
-  if (keyDown("space")) {
-    createArrow();
-    
+  playerArcher.display();
+  computerArcher.display()
+
+ // Uncomment and use correct for loop to display arrow using showArrow() function
+ for (var i=0; i<playerArrows.length; i++) 
+ {
+ showArrows(i, playerArrows);
+ }
+
+}
+
+
+
+function keyPressed() {
+  if(keyCode === 32){
+    // create an arrow object and add into an array ; set its angle same as angle of playerArcher
+    var posX = playerArcher.body.position.x;
+    var posY = playerArcher.body.position.y;
+    var angle = playerArcher.body.angle+PI/2;
+    var arrow = new PlayerArrow(posX, posY, 100, 10);
+    arrow.trajectory = [];
+    Matter.Body.setAngle(arrow.body, angle);
+    playerArrows.push(arrow);
   }
-  
-  //creating continous balloons
-  var select_balloon = Math.round(random(1,4));
-  
-  if (World.frameCount % 100 == 0) {
-    if (select_balloon == 1) {
-      redBalloon();
-    } else if (select_balloon == 2) {
-      greenBalloon()
-    } else if (select_balloon == 3) {
-      blueBalloon()
-    } else if (select_balloon == 4) {
-      pinkBalloon()
+}
+
+function keyReleased () {
+
+  if(keyCode === 32){
+    //call shoot() function for each arrow in an array playerArrows
+    if (playerArrows.length) {
+      var angle = playerArcher.body.angle+PI/2;
+      playerArrows[playerArrows.length - 1].shoot(angle);
     }
-      
-    
   }
-    
-   
 
-   
-  drawSprites();
-  textSize(20);
-  text("Score "+ Score, 270,30);
+}
+//Display arrow and Tranjectory
+function showArrows(index, arrows) {
+  arrows[index].display();
   
-
-}
-
-
-// Creating  arrows for bow
- function createArrow() {
-  var arrow= createSprite(100, 100, 60, 10);
-  arrow.addImage(arrowImage);
-  arrow.x = 360;
-  arrow.y=bow.y;
-  arrow.velocityX = -4;
-  arrow.lifetime = 100;
-  arrow.scale = 0.3;
-}
-
-
-function redBalloon() {
-  var red = createSprite(0,Math.round(random(50, 370)), 10, 10);
-  red.addImage(red_balloonImage);
-  red.velocityX = 3;
-  red.lifetime = 150;
-  red.scale = 0.1;
-
-}
-
-function blueBalloon() {
-  //write code for spwaning blue balloons
-  var blue = createSprite(0,Math.round(random(20, 370)), 10 , 10);
-  blue.addImage(blue_balloonImage);
-  blue.velocityX = 3;
-  blue.lifetime = 150;
-  blue.scale = 0.1;
-
-}
-
-function greenBalloon() {
-  //write code for spwaning green balloons
-  var green = createSprite(0,Math.round(random(20, 370)), 10 , 10);
-  green.addImage(green_balloonImage);
-  green.velocityX = 3;
-  green.lifetime = 150;
-  green.scale = 0.1;
-
-}
-
-function pinkBalloon() {
-  //write code for spwaning pink balloons
-  var pink = createSprite(0,Math.round(random(20, 370)), 10 , 10);
-  pink.addImage(pink_balloonImage);
-  pink.velocityX = 3;
-  pink.lifetime = 150;
-  pink.scale = 1.5;
+    
+  
+ 
 
 }
